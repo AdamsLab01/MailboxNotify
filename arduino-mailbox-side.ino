@@ -12,7 +12,6 @@ All code (except external libraries and third party code) is published under the
 
 **********************************************************************************************************************/
 
-
 #include <avr/sleep.h>
 
 // States
@@ -30,6 +29,7 @@ int RetrieveSW = 3;
 int XBPower = 4;
 int NotifyLED1 = 5;
 int NotifyLED2 = 6;
+int DomeLED = 7;
 
 // Vars
 bool delivery = false;
@@ -41,6 +41,7 @@ void setup() {
   pinMode(XBPower, OUTPUT);
   pinMode(NotifyLED1, OUTPUT);
   pinMode(NotifyLED2, OUTPUT);
+  pinMode(DomeLED, OUTPUT);
   
   // Enable internal resistors by setting the PINs as HIGH. This is so we don't have to use pesky extenal resistors
   digitalWrite(DeliverSW, HIGH);
@@ -76,6 +77,7 @@ void F_SleepyTime() {
   attachInterrupt(1, F_Interrupt, RISING);
   
   digitalWrite(XBPower, HIGH);
+  digitalWrite(DomeLED, LOW);
   
   delay(100); 
   
@@ -127,6 +129,12 @@ void F_retrieve() {
   if (delivery == true) {
     digitalWrite(NotifyLED1, LOW);
     digitalWrite(NotifyLED2, LOW);
+   
+      while (digitalRead(RetrieveSW) == HIGH) {
+        digitalWrite(DomeLED, HIGH); // Stay here to keep the mailbox dome LED on while the retrieve door is opened
+      } 
+    
+    digitalWrite(DomeLED, LOW);
     digitalWrite(XBPower, LOW); // Turn the radio on
     delay(5000); // Give the radio some time to settle
     Serial.println("0"); // Send a chracter out the serial to turn off the house notification
