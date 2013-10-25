@@ -1,5 +1,5 @@
 // PIN Names
-int LightSW = 13;
+int LightSW = 2;
 
 void setup() {
   pinMode(LightSW, OUTPUT);
