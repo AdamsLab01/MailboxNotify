@@ -1,12 +1,12 @@
 /**********************************************************************************************************************
 v1.0 - Mailbox Notifier
 
-This sketch was written to work as a Sanilmanil box delivery nitification system. It uses to LEDs mounted to the mailbox
-as local (to the mailbox) deilivery notifications. It also sends out a serial charater via a connected XBee modem. When 
-the reciving XBee (set in a remote location, liek say your in your house) recives the character it either turns an indicator
+This sketch was written to work as a Snail mail box delivery notification system. It uses to LEDs mounted to the mailbox
+as local (to the mailbox) delivery notifications. It also sends out a serial character via a connected XBee modem. When 
+the receiving XBee (set in a remote location like in your house) receives the character it either turns an indicator
 light on or off.
 
-For more information see - http://awaitinginspiration.com or ping adam@adambyers.com
+For more information see - http://adambyers.com/2013/11/mailbox-notifier/ or ping adam@adambyers.com
 
 All code (except external libraries and third party code) is published under the MIT License.
 
@@ -43,7 +43,7 @@ void setup() {
   pinMode(NotifyLED2, OUTPUT);
   pinMode(DomeLED, OUTPUT);
   
-  // Enable internal resistors by setting the PINs as HIGH. This is so we don't have to use pesky extenal resistors
+  // Enable internal resistors by setting the PINs as HIGH. This is so we don't have to use pesky external resistors
   digitalWrite(DeliverSW, HIGH);
   digitalWrite(RetrieveSW, HIGH);
   
@@ -83,7 +83,7 @@ void F_SleepyTime() {
   
   set_sleep_mode(SLEEP_MODE_PWR_DOWN); // Most power savings in this mode
   
-  sleep_enable(); // Enable sleed
+  sleep_enable(); // Enable sleep
   
   sleep_mode(); // Go to sleep
   
@@ -113,10 +113,10 @@ void F_deliver() {
     digitalWrite(NotifyLED1, HIGH);
     digitalWrite(NotifyLED2, HIGH);
     digitalWrite(XBPower, LOW); // Turn the radio on
-    delay(5000); // Give the radio some time to settle
-    Serial.println("1"); // Send a chracter out the serial to turn on the house notification
+    delay(3000); // Give the radio some time to settle
+    Serial.println("1"); // Send a character out the serial to turn on the house notification
     delivery = true;
-    delay(5000);
+    delay(3000);
     state = S_sleep;
   }
   
@@ -136,10 +136,10 @@ void F_retrieve() {
     
     digitalWrite(DomeLED, LOW);
     digitalWrite(XBPower, LOW); // Turn the radio on
-    delay(5000); // Give the radio some time to settle
-    Serial.println("0"); // Send a chracter out the serial to turn off the house notification
+    delay(3000); // Give the radio some time to settle
+    Serial.println("0"); // Send a character  out the serial to turn off the house notification
     delivery = false;
-    delay(5000);
+    delay(3000);
     state = S_sleep;
   }
 
