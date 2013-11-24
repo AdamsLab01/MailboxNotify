@@ -113,10 +113,10 @@ void F_deliver() {
     digitalWrite(NotifyLED1, HIGH);
     digitalWrite(NotifyLED2, HIGH);
     digitalWrite(XBPower, LOW); // Turn the radio on
-    delay(3000); // Give the radio some time to settle
+    delay(10000); // Give the radio some time to settle after waking up
     Serial.println("1"); // Send a character out the serial to turn on the house notification
     delivery = true;
-    delay(3000);
+    delay(10000); // Give some time to make sure the XBee has transmitted before we go back to sleep
     state = S_sleep;
   }
   
@@ -130,16 +130,16 @@ void F_retrieve() {
     digitalWrite(NotifyLED1, LOW);
     digitalWrite(NotifyLED2, LOW);
    
-      while (digitalRead(RetrieveSW) == HIGH) {
-        digitalWrite(DomeLED, HIGH); // Stay here to keep the mailbox dome LED on while the retrieve door is opened
-      } 
+	while (digitalRead(RetrieveSW) == HIGH) {
+		digitalWrite(DomeLED, HIGH); // Stay here to keep the mailbox dome LED on while the retrieve door is opened
+	} 
     
     digitalWrite(DomeLED, LOW);
     digitalWrite(XBPower, LOW); // Turn the radio on
-    delay(3000); // Give the radio some time to settle
+    delay(10000); // Give the radio some time to settle after waking up
     Serial.println("0"); // Send a character  out the serial to turn off the house notification
     delivery = false;
-    delay(3000);
+    delay(10000); // Give some time to make sure the XBee has transmitted before we go back to sleep
     state = S_sleep;
   }
 
