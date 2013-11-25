@@ -7,13 +7,15 @@ void setup() {
 }
 
 void loop() {
-  char LightState = Serial.read();
-  
-  if(LightState == '1'){  	 
-    digitalWrite(LightSW, HIGH);
-  }
-  
-  else if(LightState == '0'){
-    digitalWrite(LightSW, LOW);
-  }
+	while(Serial.available()){  // Determine if there is anything to read from serial
+		char LightState = Serial.read();  // If there is something to read from serial, read it
+
+			if(LightState == '0'){  	 
+				digitalWrite(2, LOW);
+			}
+	
+			else if(LightState == '1'){
+				digitalWrite(2, HIGH);
+			}
+	}
 }
