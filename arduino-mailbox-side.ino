@@ -1,5 +1,5 @@
 /**********************************************************************************************************************
-v1.0 - Mailbox Notifier
+Mailbox Notifier - Mailbox Side
 
 This sketch was written to work as a Snail mail box delivery notification system. It uses to LEDs mounted to the mailbox
 as local (to the mailbox) delivery notifications. It also sends out a serial character via a connected XBee modem. When 
