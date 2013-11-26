@@ -33,6 +33,8 @@ int DomeLED = 7;
 
 // Vars
 bool delivery = false;
+int transmitCount = 0;
+int timesToTransmit = 10;
 
 void setup() { 
   // Set PINs as inputs or outputs
@@ -114,9 +116,15 @@ void F_deliver() {
     digitalWrite(NotifyLED2, HIGH);
     digitalWrite(XBPower, LOW); // Turn the radio on
     delay(10000); // Give the radio some time to settle after waking up
-    Serial.println("1"); // Send a character out the serial to turn on the house notification
+    
+    while(transmitCount != timesToTransmit){  
+      Serial.println("1"); // Send a character out the serial to turn on the house notification
+      delay(1000);
+      transmitCount ++;
+    }
+    
+    transmitCount = 0;
     delivery = true;
-    delay(10000); // Give some time to make sure the XBee has transmitted before we go back to sleep
     state = S_sleep;
   }
   
@@ -137,9 +145,15 @@ void F_retrieve() {
     digitalWrite(DomeLED, LOW);
     digitalWrite(XBPower, LOW); // Turn the radio on
     delay(10000); // Give the radio some time to settle after waking up
-    Serial.println("0"); // Send a character  out the serial to turn off the house notification
+    
+    while(transmitCount != timesToTransmit){  
+      Serial.println("0"); // Send a character out the serial to turn on the house notification
+      delay(1000);
+      transmitCount ++;
+    }
+    
+    transmitCount = 0;
     delivery = false;
-    delay(10000); // Give some time to make sure the XBee has transmitted before we go back to sleep
     state = S_sleep;
   }
 
