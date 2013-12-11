@@ -95,11 +95,14 @@ void F_SleepyTime() {
   state = S_process; // Figure out what switch woke up the Arduino and act accordingly
 } 
 
-void F_Interrupt(){
+void F_Interrupt() {
 
 }
 
-void F_process() {  
+void F_process() { 
+  detachInterrupt(0);
+  detachInterrupt(1);
+  
   if (digitalRead(DeliverSW) == HIGH){
     state = S_deliver;
   }
@@ -138,9 +141,9 @@ void F_retrieve() {
     digitalWrite(NotifyLED1, LOW);
     digitalWrite(NotifyLED2, LOW);
    
-	while (digitalRead(RetrieveSW) == HIGH) {
-		digitalWrite(DomeLED, HIGH); // Stay here to keep the mailbox dome LED on while the retrieve door is opened
-	} 
+    while (digitalRead(RetrieveSW) == HIGH) {
+      digitalWrite(DomeLED, HIGH); // Stay here to keep the mailbox dome LED on while the retrieve door is opened
+    } 
     
     digitalWrite(DomeLED, LOW);
     digitalWrite(XBPower, LOW); // Turn the radio on
