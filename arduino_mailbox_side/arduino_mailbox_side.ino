@@ -34,8 +34,9 @@ int DomeLED = 7;
 // Vars
 bool delivery = false;
 int transmitCount = 0;
-// Number of times we will send out the ON or OFF signal out for the house notification. This can be reduced if the distance/interferace of the enviornmen is low
-int timesToTransmit = 20;
+int timesToTransmit = 20; // Number of times we will send out the ON or OFF signal out for the house notification. This can be reduced if the distance/interferace of the enviornmen is low
+int XBeeWakeupDelay = 15000; // Number of milliseconds we wait after waking the XBee before using it
+int XBeeTransmitDelay = 1500; // Number of milliseconds we wait between transmitions
 
 void setup() { 
   // Set PINs as inputs or outputs
@@ -115,12 +116,12 @@ void F_process() {
 void F_deliver() {  
   if (delivery == false) {
     digitalWrite(XBPower, LOW); // Turn the radio on
-    delay(10000); // Give the radio some time to settle after waking up
+    delay(XBeeWakeupDelay); // Give the radio some time to settle after waking up
     
     // For the sake of making sure the house notification gets its ON signal we send the ON command out, wait 1.5 seconds and then send it out again until transmitCount is equal to timesToTransmit
     while(transmitCount != timesToTransmit){  
       Serial.println("1"); // Send a character out the serial to turn on the house notification
-      delay(1500); // Give some time for the transmition to end before we send the next one
+      delay(XBeeTransmitDelay); // Give some time for the transmition to end before we send the next one
       transmitCount ++;
     }
     
@@ -153,12 +154,12 @@ void F_retrieve() {
     digitalWrite(DomeLED, LOW); // Turn the dome LED off
     
     digitalWrite(XBPower, LOW); // Turn the radio on
-    delay(10000); // Give the radio some time to settle after waking up before doing anything with it
+    delay(XBeeWakeupDelay); // Give the radio some time to settle after waking up before doing anything with it
     
     // For the sake of making sure the house notification gets its OFF signal we send the OFF command out, wait 1.5 seconds and then send it out again until transmitCount is equal to timesToTransmit
     while(transmitCount != timesToTransmit){  
       Serial.println("0"); // Send a character out the serial to turn off the house notification
-      delay(1500);
+      delay(XBeeTransmitDelay);
       transmitCount ++;
     }
     
