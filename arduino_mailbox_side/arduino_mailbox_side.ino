@@ -34,7 +34,8 @@ int DomeLED = 7;
 // Vars
 bool delivery = false;
 int transmitCount = 0;
-int timesToTransmit = 10;
+// Number of times we will send out the ON or OFF signal out for the house notification. This can be reduced if the distance/interferace of the enviornmen is low
+int timesToTransmit = 20;
 
 void setup() { 
   // Set PINs as inputs or outputs
@@ -75,13 +76,12 @@ void loop() {
 }
 
 void F_SleepyTime() {
-  attachInterrupt(0, F_Interrupt, RISING);
-  attachInterrupt(1, F_Interrupt, RISING);
+  attachInterrupt(0, F_Interrupt, RISING); // Attach the interrupt so that we can wake up when mail is delivered
+  attachInterrupt(1, F_Interrupt, RISING); // Attach the interrupt so that we can wake up when mail is retrieved
   
-  digitalWrite(XBPower, HIGH);
-  digitalWrite(DomeLED, LOW);
+  digitalWrite(XBPower, HIGH); // Put the XBee to sleep
   
-  delay(100); 
+  delay(100); // Slight delay for sanity
   
   set_sleep_mode(SLEEP_MODE_PWR_DOWN); // Most power savings in this mode
   
@@ -89,17 +89,17 @@ void F_SleepyTime() {
   
   sleep_mode(); // Go to sleep
   
-  // When woken up will continue to process from this point
-  sleep_disable(); 
+  sleep_disable(); // When woken up will continue to process from this point
  
   state = S_process; // Figure out what switch woke up the Arduino and act accordingly
 } 
 
 void F_Interrupt() {
-
+// Empty funciton for interrupt
 }
 
 void F_process() { 
+  // Functionally unnecessary but for good mesure we detach the interrupts while we are not using them
   detachInterrupt(0);
   detachInterrupt(1);
   
@@ -113,24 +113,27 @@ void F_process() {
 }
  
 void F_deliver() {  
-  
   if (delivery == false) {
-    digitalWrite(NotifyLED1, HIGH);
-    digitalWrite(NotifyLED2, HIGH);
     digitalWrite(XBPower, LOW); // Turn the radio on
     delay(10000); // Give the radio some time to settle after waking up
     
+    // For the sake of making sure the house notification gets its ON signal we send the ON command out, wait 1.5 seconds and then send it out again until transmitCount is equal to timesToTransmit
     while(transmitCount != timesToTransmit){  
       Serial.println("1"); // Send a character out the serial to turn on the house notification
-      delay(1000);
+      delay(1500); // Give some time for the transmition to end before we send the next one
       transmitCount ++;
     }
     
-    transmitCount = 0;
+    // Turn the external notification LEDs on
+    digitalWrite(NotifyLED1, HIGH);
+    digitalWrite(NotifyLED2, HIGH);
+    
+    transmitCount = 0; // Reset
     delivery = true;
     state = S_sleep;
   }
   
+  // To make sure we conserve power we just go right back to sleep if the delevery door is opened after we have already detcted delivery
   else if (delivery == true) {
     state = S_sleep;
   }
@@ -138,28 +141,33 @@ void F_deliver() {
 
 void F_retrieve() {
   if (delivery == true) {
+    // Turn off the external notification LEDs
     digitalWrite(NotifyLED1, LOW);
     digitalWrite(NotifyLED2, LOW);
    
+    // Turn on the dome LED on untill the retrive door is closed so we can see inside the mailbox if it's dark outside
     while (digitalRead(RetrieveSW) == HIGH) {
-      digitalWrite(DomeLED, HIGH); // Stay here to keep the mailbox dome LED on while the retrieve door is opened
+      digitalWrite(DomeLED, HIGH);
     } 
     
-    digitalWrite(DomeLED, LOW);
-    digitalWrite(XBPower, LOW); // Turn the radio on
-    delay(10000); // Give the radio some time to settle after waking up
+    digitalWrite(DomeLED, LOW); // Turn the dome LED off
     
+    digitalWrite(XBPower, LOW); // Turn the radio on
+    delay(10000); // Give the radio some time to settle after waking up before doing anything with it
+    
+    // For the sake of making sure the house notification gets its OFF signal we send the OFF command out, wait 1.5 seconds and then send it out again until transmitCount is equal to timesToTransmit
     while(transmitCount != timesToTransmit){  
-      Serial.println("0"); // Send a character out the serial to turn on the house notification
-      delay(1000);
+      Serial.println("0"); // Send a character out the serial to turn off the house notification
+      delay(1500);
       transmitCount ++;
     }
     
-    transmitCount = 0;
+    transmitCount = 0; // Reset
     delivery = false;
     state = S_sleep;
   }
 
+  // To make sure we conserve power we just go right back to sleep if the the retrive door is opened when a delivery has not been detected
   else if (delivery == false) {
     state = S_sleep;
   }
