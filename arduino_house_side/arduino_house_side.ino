@@ -2,8 +2,8 @@
 Mailbox Notifier - House Side
 
 This sketch was written to work as a Snail mail delivery notification system. It uses two LEDs mounted to the mailbox
-as local (to the mailbox) delivery notification. It also sends out delivery/retrieve data via an XBee modem (serial). When 
-the receiving XBee (set in a remote location, like your house) receives the data it turns a delivery indicator
+as local (to the mailbox) delivery notification. It also sends out delivery/retrieve data via an XBee modem (serial). 
+When the receiving XBee (set in a remote location, like your house) receives the data it turns a delivery indicator
 light on or off and records and displays the delivery/retrieve data.
 
 For more information see - http://adambyers.com/2013/11/mailbox-notifier/ or ping adam@adambyers.com
@@ -21,6 +21,8 @@ RTC_DS1307 rtc; // Define the RTC
 
 // PIN Names
 int lightSW = 2;
+int hourPlusSW = 9;
+int hourMinusSW = 10;
 
 // LCD PINs
 LiquidCrystal lcd(3, 4, 5, 6, 7, 8);
@@ -28,6 +30,8 @@ LiquidCrystal lcd(3, 4, 5, 6, 7, 8);
 // Vars
 float temp = 0;
 float voltage = 0;
+bool delivered = false;
+bool retrieve = false;
 int notify = 3; // This will come in via serial as 0 or 1. Set to 3 here to keep it from triggering.
 // Current data/time vars
 int cYear = 0;
@@ -60,9 +64,15 @@ long lcdInt = 2000; // Time to display each "screen."
 int numScreen = 9; // How many "screens" we have, less 1.  
 int screenNum = 0;  
 bool screenChanged = true;
-// Misc Vars
-bool delivered = false;
-bool retrieve = false;
+// Button 1 debounce vars
+int buttonState1;
+int lastButtonState1 = HIGH;
+long lastDebounceTime1 = 0;
+long debounceDelay = 5;
+// Button 2 debounce vars
+int buttonState2;
+int lastButtonState2 = HIGH;
+long lastDebounceTime2 = 0;
 
 // LCD update states 
 #define C_date 0
@@ -78,6 +88,11 @@ bool retrieve = false;
 
 void setup() {
   pinMode(lightSW, OUTPUT);
+  pinMode(hourPlusSW, INPUT);
+  pinMode(hourMinusSW, INPUT);
+  
+  digitalWrite(hourPlusSW, HIGH); // Enable internal resistor for switch.
+  digitalWrite(hourMinusSW, HIGH); // Enable internal resistor for switch.
   
   Serial.begin(9600);
   
@@ -88,20 +103,69 @@ void setup() {
   lcd.begin(8, 2);
   
 /*
-To set the date/time uncomment the line below and upload the sketch. The RTC will be set to the system date/time recorded when 
-compiled. After, comment out the line and upload the sketch again. Form this point forward the RTC will keep track of the date/time
-itself. Failure to comment out the line and re-upload will cause the date/time to be reset to the compiled time each time the Arduino 
-is rebooted.
+To set the date/time:
+
+1. Uncomment the line: 
+
+    rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+
+2. Upload the sketch
+
+3. Comment out the line:
+
+    rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+  
+4. Upload the sketch.
+
+The RTC will be set to the system date/time recorded when compiled. After, you MUST comment out the 'rtc.adjust...' line 
+and upload the sketch again. Form this point forward the RTC will keep track of the date/time itself. Failure to comment 
+out the 'rtc.adjust...' line and re-upload will cause the date/time to be reset to the compiled time if the Arduino 
+is reset. 
 */
-  
-// rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
-  
+
+  // rtc.adjust(DateTime(F(__DATE__), F(__TIME__))); // Uncomment to set RTC to system time.
 }
 
-void loop() {
-  DateTime now = rtc.now(); // Get the current time & date for display only.
+void loop() { 
+  DateTime now = rtc.now(); // Get the current time & date (for display).
   
-  // Record the current time and date for display only.
+  // Added so we can add or subtract an hour from the RTC if need be (stupid DST). Would have been cleaner to write this as a function rather than repeting it for both buttons.
+  int reading1 = digitalRead(hourPlusSW) == LOW;
+  
+  if (reading1 != lastButtonState1) {
+    lastDebounceTime1 = millis();
+  }
+  
+  if ((millis() - lastDebounceTime1) > debounceDelay) {
+    if (reading1 != buttonState1) {
+      buttonState1 = reading1;
+      if (buttonState1 == LOW) { // Logic is inverted since we're using the internal resistors. When button is pressed the PIN goes LOW, when not pressed it's HIGH.
+        rtc.adjust(DateTime(now.year(), now.month(), now.day(), now.hour() + 1, now.minute()));
+      }
+    }
+  }
+  
+  lastButtonState1 = reading1;
+  // Done debouncing and depositing.
+  
+  int reading2 = digitalRead(hourMinusSW) == LOW;
+  
+  if (reading2 != lastButtonState2) {
+    lastDebounceTime2 = millis();
+  }
+  
+  if ((millis() - lastDebounceTime2) > debounceDelay) {
+    if (reading2 != buttonState2) {
+      buttonState2 = reading2;
+      if (buttonState2 == LOW) { // Logic is inverted since we're using the internal resistors. When button is pressed the PIN goes LOW, when not pressed it's HIGH.
+        rtc.adjust(DateTime(now.year(), now.month(), now.day(), now.hour() - 1, now.minute()));
+      }
+    }
+  }
+  
+  lastButtonState2 = reading2;
+
+  // Record the current time and date for display.
   cYear = (now.year()) - 2000; // Subtract 2000 so we get a 2-digit date and can fit it on the LCD.
   cMonth = (now.month());
   cDay = (now.day());
