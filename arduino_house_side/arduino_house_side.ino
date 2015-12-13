@@ -123,7 +123,7 @@ out the 'rtc.adjust...' line and re-upload will cause the date/time to be reset 
 is reset. 
 */
 
-  // rtc.adjust(DateTime(F(__DATE__), F(__TIME__))); // Uncomment to set RTC to system time.
+   rtc.adjust(DateTime(F(__DATE__), F(__TIME__))); // Uncomment to set RTC to system time.
 }
 
 void loop() { 
