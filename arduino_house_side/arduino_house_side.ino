@@ -8,8 +8,6 @@ light on or off and records and displays the delivery/retrieve data.
 
 For more information see - http://adambyers.com/2013/11/mailbox-notifier/ or ping adam@adambyers.com
 
-All code (except external libraries and third party code) is published under the MIT License.
-
 **********************************************************************************************************************/
 
 //Libraries
